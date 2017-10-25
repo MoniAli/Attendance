@@ -32,63 +32,56 @@ class attendance(object):
         
         self.id_name_dict = self.read() #Dictionary mapping of hashed IDs to names
         
-        self.start_threads() #Begins pool of 5 threads ready to process anything in Queue
-
+        self.start_threads() #Begins pool of 2 threads ready to process anything in Queue
+        self.google_thread = threading.Thread(target=self.google_connect)
+        
         self.sheet = self.google_connect()
         
         self.column = self.find_column()
-        
-        #Allow time for threads to be initiated and google sheet to connect
-        time.sleep(.05)
-    
-        #Main input loop
-        self.run()
-        
-              
-        
+
+                              
       
-    def run(self):
-        #Loop to continuously gain input from brothers
-        while True:
-            new_id = (getpass.getpass("Please swipe a JAC card or enter your ID #: "))
-            if new_id == 'exit':
-                break
-            
+    def run(self, new_id):
             #Lets format our JAC # and hash them
-            if len(new_id) != 9:
-                new_id = hash(new_id[1:10])
-            else:
-                new_id = hash(new_id)
+        if len(new_id) != 9:
+            new_id = hash(new_id[1:10])
+        else:
+            new_id = hash(new_id)
+        
+        
+        if self.id_name_dict.has_key(new_id):
+            self.id_list.put(self.id_name_dict[new_id])
+        else:
+            name = raw_input("Please enter your name as it appears in the Google Drive ")
+            #Exit option
+            if name == 'exit':
+                return
+            self.id_name_dict[new_id] = name
+            self.id_list.put(self.id_name_dict[new_id])
             
-            
-            if self.id_name_dict.has_key(new_id):
-                self.id_list.put(self.id_name_dict[new_id])
-            else:
-                name = raw_input("Please enter your name as it appears in the Google Drive ")
-                #Exit option
-                if name == 'exit':
-                    break
-                self.id_name_dict[new_id] = name
-                self.id_list.put(self.id_name_dict[new_id])
-                
             #Lets assume this new addition will be properly checked in by other thread
-            self.checked.append((self.id_name_dict[new_id], datetime.datetime.now()))
+        self.checked.append((self.id_name_dict[new_id], datetime.datetime.now()))
            
         #Dump the object for later recovery
+        """
         f = open(self.filename, 'w+')
         p.dump(self.id_name_dict, f)
         f.close()
     
         self.format_log()
+        """
     
     def processor(self):
+        print "Made thread"
         while True:
             self.lock.acquire()
             while self.id_list.empty():
                 time.sleep(.01)
             current_id = self.id_list.get()
+            print current_id
             self.lock.release()
             try:
+                print threading.current_thread
                 cell = self.sheet.find(current_id)
                 self.sheet.update_cell(cell.row, self.column, 1)
             except gspread.exceptions.CellNotFound as e:
@@ -144,7 +137,7 @@ class attendance(object):
     def start_threads(self):
         self.lock = threading.Lock()
         self.threads = []
-        for i in range(5):
+        for i in range(2):
             t = threading.Thread(target = self.processor)
             self.threads.append(t)
         for thread in self.threads:

@@ -12,21 +12,41 @@ from attendance import attendance
 class Reader(object):
         
     def __init__(self, master):
-        self.frame = tk.Frame(master)
-        self.frame.pack()
-        
+        #Make a menu bar
         self.make_menu(master)
-        self.pictures = self.load_photos()
+        
+        #Load all the GIF Pics and start running the image
+        self.photo_index = 0
+        self.pictures = self.load_photos(master)
         self.run_gif(master)
         
-    def load_photos(self):
-        pass
+        
+        master.bind("<Return>", self.new_input)
+        self.a = attendance()
+        
+        
+        
+    def new_input(self, event):
+        print "Hit enter"
+        self.a.run('110237211')
+        
+    def load_photos(self, master):
+        photos = []
+        for i in range(0, 90):
+            photos.append(tk.PhotoImage(file='gifImages/tmp-%d.gif'%(i)))
+        self.w = tk.Label(master, image=photos[0], bg='gray15', anchor=tk.CENTER)
+        self.w.photo = photos[0]
+        self.w.pack(expand=True)
+        return photos
         
     def run_gif(self, master):
-        photo = tk.PhotoImage(file='giphy.gif')
-        self.w = tk.Label(master, image=photo, bg='gray15')
-        self.w.photo = photo
-        self.w.pack(fill="none", expand=True)
+        if self.photo_index == 90:
+            self.photo_index = 0
+        self.w.photo = self.pictures[self.photo_index]
+        self.w.config(image=self.pictures[self.photo_index])
+        self.w.pack(expand=True)
+        self.photo_index += 1
+        master.after(50, self.run_gif, master)
         
     def make_menu(self, master):
         
