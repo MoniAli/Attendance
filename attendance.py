@@ -70,6 +70,7 @@ class attendance(object):
     
         self.format_log()
         """
+        return self.id_name_dict[new_id]
     
     def processor(self):
         print "Made thread"
