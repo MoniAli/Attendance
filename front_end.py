@@ -12,29 +12,39 @@ from attendance import attendance
 class Reader(object):
         
     def __init__(self, master):
+        
         #Make a menu bar
         self.make_menu(master)
+        
+        #Space for user input
+        self.make_input_bar(master)
         
         #Load all the GIF Pics and start running the image
         self.photo_index = 0
         self.pictures = self.load_photos(master)
         self.run_gif(master)
-        
-        
+        print "Here:"
+        #Bind the enter button to new input
         master.bind("<Return>", self.new_input)
-        self.a = attendance()
         
+        
+        #Create the attender
+        self.attender = attendance()
+        
+    def make_input_bar(self, master):
+        self.text_entry = tk.Entry(master, show='*', bg='gray15',bd='0', fg='white', justify='center')
+        self.text_entry.pack(expand=True, anchor=tk.CENTER)
         
         
     def new_input(self, event):
-        print "Hit enter"
-        self.a.run('110237211')
+        new_id = self.text_entry.get()
+        self.attender.run(new_id)
         
     def load_photos(self, master):
         photos = []
         for i in range(0, 90):
             photos.append(tk.PhotoImage(file='gifImages/tmp-%d.gif'%(i)))
-        self.w = tk.Label(master, image=photos[0], bg='gray15', anchor=tk.CENTER)
+        self.w = tk.Label(master, image=photos[0], bg='gray15', anchor=tk.N)
         self.w.photo = photos[0]
         self.w.pack(expand=True)
         return photos
