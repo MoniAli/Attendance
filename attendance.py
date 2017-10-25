@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 This code is property of Moni (Munsoor Ali)
-MESSING
+
 Any unlawful distribution, usage, or tampering  
 will be dealt with the full extent of the law
 
