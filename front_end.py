@@ -12,7 +12,6 @@ from attendance import attendance
 class Reader(object):
         
     def __init__(self, master):
-        
         #Make a menu bar
         self.make_menu(master)
         
@@ -22,31 +21,56 @@ class Reader(object):
         #Space for label to let individual know progress
         self.make_label(master)
         
+        self.make_error_label(master)
+        
         #Load all the GIF Pics and start running the image
         self.photo_index = 0
         self.pictures = self.load_photos(master)
         self.run_gif(master)
-        print "Here:"
+        
         #Bind the enter button to new input
-        master.bind("<Return>", self.new_input)
+        master.bind("<Return>", lambda event: self.new_input(event, master))
+        self.cur = 99
         
         
         #Create the attender
         self.attender = attendance()
         
     def make_label(self, master):
-        self.label = tk.Label(master, bg='gray15', fg='white')
-        self.label.pack()
+        self.label = tk.Label(master, bg='gray15', fg='white', font=("Helvetica", 80))
+        self.label.pack(anchor=tk.CENTER)
+        
+    def make_error_label(self, master):
+        self.error_label = tk.Label(master, bg='gray15', fg='red', font=('Helvetica', 30))
+        #self.error_label.pack()
         
     def make_input_bar(self, master):
-        self.text_entry = tk.Entry(master, show='*', bg='gray15',bd='0', fg='white', justify='center')
+        self.text_entry = tk.Entry(master, show='*', bg='gray15',bd='0', fg='white', justify='center', font=("Helvetica", 30))
         self.text_entry.pack(expand=True, anchor=tk.CENTER)
         
         
-    def new_input(self, event):
+    def new_input(self, event, master):
         new_id = self.text_entry.get()
-        name = self.attender.run(new_id)
-        self.label.configure(text=name + " checked in", fg = 'green')
+        self.text_entry.delete(0, 'end')
+        self.name = self.attender.run(new_id)
+        """"EDIT MADE TO RETURN NONE, CAN HANDLE THINGS NOT FOUND IN DICT"""
+        if self.name == None:
+            return
+        self.label.configure(text=self.name + " checked in")
+        self.error_label.configure(text="Whoops")
+        master.after(100, self.clear_text, master)
+        
+    def clear_text(self, master):
+        if self.name + " checked in" != self.label.cget("text"):
+            return
+        if self.cur == 14:
+            self.cur = 99
+            return
+        self.label.configure(fg='gray%d'%(self.cur))
+        self.cur -= 1
+        master.after(35, self.clear_text, master)
+         
+        
         
     def load_photos(self, master):
         photos = []

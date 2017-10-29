@@ -38,8 +38,6 @@ class attendance(object):
         self.sheet = self.google_connect()
         
         self.column = self.find_column()
-
-                              
       
     def run(self, new_id):
             #Lets format our JAC # and hash them
@@ -52,6 +50,8 @@ class attendance(object):
         if self.id_name_dict.has_key(new_id):
             self.id_list.put(self.id_name_dict[new_id])
         else:
+            """EDIT MADE TO RETURN NONE IF INVALID INPUT"""
+            return None
             name = raw_input("Please enter your name as it appears in the Google Drive ")
             #Exit option
             if name == 'exit':
@@ -73,16 +73,13 @@ class attendance(object):
         return self.id_name_dict[new_id]
     
     def processor(self):
-        print "Made thread"
         while True:
             self.lock.acquire()
             while self.id_list.empty():
                 time.sleep(.01)
             current_id = self.id_list.get()
-            print current_id
             self.lock.release()
             try:
-                print threading.current_thread
                 cell = self.sheet.find(current_id)
                 self.sheet.update_cell(cell.row, self.column, 1)
             except gspread.exceptions.CellNotFound as e:
